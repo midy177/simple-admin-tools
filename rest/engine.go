@@ -28,7 +28,8 @@ type engine struct {
 	conf   RestConf
 	routes []featuredRoutes
 	// timeout is the max timeout of all routes
-	timeout              time.Duration
+	Timeout time.Duration
+	//timeout              time.Duration
 	unauthorizedCallback handler.UnauthorizedCallback
 	unsignedCallback     handler.UnsignedCallback
 	chain                chain.Chain
@@ -41,7 +42,7 @@ type engine struct {
 func newEngine(c RestConf) *engine {
 	svr := &engine{
 		conf:    c,
-		timeout: time.Duration(c.Timeout) * time.Millisecond,
+		Timeout: time.Duration(c.Timeout) * time.Millisecond,
 	}
 
 	if c.CpuThreshold > 0 {
@@ -58,8 +59,8 @@ func (ng *engine) addRoutes(r featuredRoutes) {
 
 	// need to guarantee the timeout is the max of all routes
 	// otherwise impossible to set http.Server.ReadTimeout & WriteTimeout
-	if r.timeout > ng.timeout {
-		ng.timeout = r.timeout
+	if r.timeout > ng.Timeout {
+		ng.Timeout = r.timeout
 	}
 }
 
@@ -183,8 +184,9 @@ func (ng *engine) checkedTimeout(timeout time.Duration) time.Duration {
 	if timeout > 0 {
 		return timeout
 	}
-
-	return time.Duration(ng.conf.Timeout) * time.Millisecond
+	// factor 1.1, to avoid servers don't have enough time to write responses.
+	// setting the factor less than 1.0 may lead clients not receiving the responses.
+	return time.Duration(11*ng.conf.Timeout/10) * time.Millisecond
 }
 
 func (ng *engine) createMetrics() *stat.Metrics {
@@ -338,12 +340,15 @@ func (ng *engine) use(middleware Middleware) {
 
 func (ng *engine) withTimeout() internal.StartOption {
 	return func(svr *http.Server) {
-		timeout := ng.timeout
+		timeout := ng.Timeout
 		if timeout > 0 {
 			// factor 0.8, to avoid clients send longer content-length than the actual content,
 			// without this timeout setting, the server will time out and respond 503 Service Unavailable,
 			// which triggers the circuit breaker.
 			svr.ReadTimeout = 4 * timeout / 5
+		}
+		// When timeout middleware is not enabled, it starts at http. Server's WriteTimeout
+		if !ng.conf.Middlewares.Timeout {
 			// factor 1.1, to avoid servers don't have enough time to write responses.
 			// setting the factor less than 1.0 may lead clients not receiving the responses.
 			svr.WriteTimeout = 11 * timeout / 10

@@ -60,7 +60,7 @@ type (
 		MaxConns int    `json:",default=10000"`
 		MaxBytes int64  `json:",default=1048576"`
 		// milliseconds
-		Timeout      int64         `json:",default=3000,env=API_TIMEOUT"`
+		Timeout      int64         `json:",default=3000,env=API_WRITE_TIMEOUT"`
 		CpuThreshold int64         `json:",default=900,range=[0:1000]"`
 		Signature    SignatureConf `json:",optional"`
 		// There are default values for all the items in Middlewares.
