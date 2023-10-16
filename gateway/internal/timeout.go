@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-const grpcTimeoutHeader = "Grpc-Timeout"
+const grpcTimeoutHeader = "Grpc-timeout"
 
 // GetTimeout returns the timeout from the header, if not set, returns the default timeout.
 func GetTimeout(header http.Header, defaultTimeout time.Duration) time.Duration {

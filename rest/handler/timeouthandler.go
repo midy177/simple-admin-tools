@@ -15,7 +15,7 @@ import (
 
 const (
 	statusClientClosedRequest = 499
-	reason                    = "Request Timeout"
+	reason                    = "Request timeout"
 	headerUpgrade             = "Upgrade"
 	valueWebsocket            = "websocket"
 )
@@ -146,7 +146,7 @@ func (tw *timeoutWriter) Push(target string, opts *http.PushOptions) error {
 }
 
 // Write writes the data to the connection as part of an HTTP reply.
-// Timeout and multiple header written are guarded.
+// timeout and multiple header written are guarded.
 func (tw *timeoutWriter) Write(p []byte) (int, error) {
 	tw.mu.Lock()
 	defer tw.mu.Unlock()

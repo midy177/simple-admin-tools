@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -42,7 +43,7 @@ func CreateIfNotExist(file string) (*os.File, error) {
 	return os.Create(file)
 }
 
-// RemoveIfExist deletes the specified file if it is exists.
+// RemoveIfExist deletes the specified file if it is existing.
 func RemoveIfExist(filename string) error {
 	if !FileExists(filename) {
 		return nil
@@ -64,7 +65,7 @@ func RemoveOrQuit(filename string) error {
 	return os.Remove(filename)
 }
 
-// FileExists returns true if the specified file is exists.
+// FileExists returns true if the specified file is existing.
 func FileExists(file string) bool {
 	_, err := os.Stat(file)
 	return err == nil
@@ -191,7 +192,7 @@ func InitTemplates(category string, templates map[string]string) error {
 	return nil
 }
 
-// CreateTemplate writes template into file even it is exists.
+// CreateTemplate writes template into file even it is existing.
 func CreateTemplate(category, name, content string) error {
 	dir, err := GetTemplateDir(category)
 	if err != nil {
@@ -308,4 +309,27 @@ func Hash(file string) (string, error) {
 		return "", err
 	}
 	return hex.EncodeToString(hash.Sum(nil)), nil
+}
+
+// GetFilesPathFromDir returns file path slice from a directory.
+// If onlyName is true, it will only return name slice.
+func GetFilesPathFromDir(path string, onlyName bool) (result []string, err error) {
+	if len(path) == 0 {
+		return nil, errors.New("the path can not be empty")
+	}
+	if _, err := os.Stat(path); err != nil {
+		return nil, err
+	}
+	_ = filepath.WalkDir(path, func(path string, d fs.DirEntry, err error) error {
+		if d.IsDir() {
+			return err
+		}
+		if onlyName {
+			result = append(result, filepath.Base(path))
+		} else {
+			result = append(result, path)
+		}
+		return err
+	})
+	return result, nil
 }

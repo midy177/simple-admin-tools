@@ -3,14 +3,12 @@ package trace
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"os"
 	"sync"
 
 	"github.com/zeromicro/go-zero/core/lang"
 	"github.com/zeromicro/go-zero/core/logx"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
@@ -21,11 +19,11 @@ import (
 )
 
 const (
-	kindJaeger   = "jaeger"
 	kindZipkin   = "zipkin"
 	kindOtlpGrpc = "otlpgrpc"
 	kindOtlpHttp = "otlphttp"
 	kindFile     = "file"
+	protocolUdp  = "udp"
 )
 
 var (
@@ -64,12 +62,6 @@ func StopAgent() {
 func createExporter(c Config) (sdktrace.SpanExporter, error) {
 	// Just support jaeger and zipkin now, more for later
 	switch c.Batcher {
-	case kindJaeger:
-		u, _ := url.Parse(c.Endpoint)
-		if u.Scheme == "udp" {
-			return jaeger.New(jaeger.WithAgentEndpoint(jaeger.WithAgentHost(u.Hostname()), jaeger.WithAgentPort(u.Port())))
-		}
-		return jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(c.Endpoint)))
 	case kindZipkin:
 		return zipkin.New(c.Endpoint)
 	case kindOtlpGrpc:

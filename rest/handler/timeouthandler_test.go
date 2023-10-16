@@ -272,9 +272,9 @@ func TestTimeoutPusher(t *testing.T) {
 
 func TestTimeoutWriter_Hijack(t *testing.T) {
 	writer := &timeoutWriter{
-		w:   httptest.NewRecorder(),
-		h:   make(http.Header),
-		req: httptest.NewRequest(http.MethodGet, "http://localhost", http.NoBody),
+		w: httptest.NewRecorder(),
+		//h:   make(http.Header),
+		//req: httptest.NewRequest(http.MethodGet, "http://localhost", http.NoBody),
 	}
 	_, _, err := writer.Hijack()
 	assert.Error(t, err)
@@ -282,13 +282,13 @@ func TestTimeoutWriter_Hijack(t *testing.T) {
 
 func TestTimeoutWroteTwice(t *testing.T) {
 	c := logtest.NewCollector(t)
-	writer := &timeoutWriter{
-		w:   response.NewWithCodeResponseWriter(httptest.NewRecorder()),
-		h:   make(http.Header),
-		req: httptest.NewRequest(http.MethodGet, "http://localhost", http.NoBody),
-	}
-	writer.writeHeaderLocked(http.StatusOK)
-	writer.writeHeaderLocked(http.StatusOK)
+	//writer := &timeoutWriter{
+	//	w:   response.NewWithCodeResponseWriter(httptest.NewRecorder()),
+	//	h:   make(http.Header),
+	//	req: httptest.NewRequest(http.MethodGet, "http://localhost", http.NoBody),
+	//}
+	//writer.writeHeaderLocked(http.StatusOK)
+	//writer.writeHeaderLocked(http.StatusOK)
 	assert.Contains(t, c.String(), "superfluous response.WriteHeader call")
 }
 

@@ -28,7 +28,7 @@ type engine struct {
 	conf   RestConf
 	routes []featuredRoutes
 	// timeout is the max timeout of all routes
-	Timeout time.Duration
+	timeout time.Duration
 	//timeout              time.Duration
 	unauthorizedCallback handler.UnauthorizedCallback
 	unsignedCallback     handler.UnsignedCallback
@@ -42,7 +42,7 @@ type engine struct {
 func newEngine(c RestConf) *engine {
 	svr := &engine{
 		conf:    c,
-		Timeout: time.Duration(c.Timeout) * time.Millisecond,
+		timeout: time.Duration(c.Timeout) * time.Millisecond,
 	}
 
 	if c.CpuThreshold > 0 {
@@ -59,8 +59,8 @@ func (ng *engine) addRoutes(r featuredRoutes) {
 
 	// need to guarantee the timeout is the max of all routes
 	// otherwise impossible to set http.Server.ReadTimeout & WriteTimeout
-	if r.timeout > ng.Timeout {
-		ng.Timeout = r.timeout
+	if r.timeout > ng.timeout {
+		ng.timeout = r.timeout
 	}
 }
 
@@ -340,7 +340,7 @@ func (ng *engine) use(middleware Middleware) {
 
 func (ng *engine) withTimeout() internal.StartOption {
 	return func(svr *http.Server) {
-		timeout := ng.Timeout
+		timeout := ng.timeout
 		if timeout > 0 {
 			// factor 0.8, to avoid clients send longer content-length than the actual content,
 			// without this timeout setting, the server will time out and respond 503 Service Unavailable,
